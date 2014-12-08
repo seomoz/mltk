@@ -1,3 +1,10 @@
+'''
+POS tagger based on textblob_aptagger
+
+(https://github.com/sloria/textblob-aptagger and
+https://honnibal.wordpress.com/2013/09/11/a-good-part-of-speechpos-tagger-in-about-200-lines-of-python/)
+'''
+
 # c imports
 cimport cython
 from aptagger cimport *
@@ -20,42 +27,6 @@ cdef class FastPerceptronTagger:
         Initialize the tagger.
         Load the model and construct the C++ class
         '''
-#        weights, tagdict, classes = cPickle.loads(pkgutil.get_data(
-#                'textblob_aptagger',
-#                'trontagger-0.1.0.pickle'))
-
-        # need to convert weights, tagdict to the format needed
-        # in C code
-        # cython makes the conversion between python string/float
-        # to C++ string/float for us
-#        weights_vec, bias_weights = weights_to_vector(weights)
-#
-#        cdef weights_in_t cweights
-#        cdef map[string, class_weights_in_t] cone_feature_weight
-#        cdef class_weights_in_t one_weight
-#        cweights.clear()
-#        for i, one_feature_weights in enumerate(weights_vec):
-#            cone_feature_weight.clear()
-#            for word, word_weights in one_feature_weights.iteritems():
-#                one_weight.clear()
-#                for t, w in word_weights.iteritems():
-#                    one_weight.push_back((t, w))
-#                cone_feature_weight[word] = one_weight
-#            cweights.push_back(cone_feature_weight)
-#
-#        cdef class_weights_in_t cbias_weights
-#        cbias_weights.clear()
-#        for t, v in bias_weights.iteritems():
-#            cbias_weights.push_back((t, v))
-#
-#        cdef tagmap_in_t ctagdict
-#        ctagdict.clear()
-#        for word, class_tag in tagdict.iteritems():
-#            ctagdict[word] = class_tag
-#
-#        self._taggerptr = new PerceptronTagger(
-#            cweights, cbias_weights,  ctagdict)
-
         with GzipFile(
                 fileobj=StringIO(pkgutil.get_data(
                 'mltk', os.path.join('models', 'aptagger-0.1.0.json.gz'))),

@@ -9,12 +9,6 @@
 
 #include "../ext/murmur3.c"
 
-// DEBUG
-#include <fstream>
-#include <sstream>
-
-#include <boost/timer.hpp>
-
 
 // use a custom hash function for the string... evidently murmurhash
 // is pretty fast
