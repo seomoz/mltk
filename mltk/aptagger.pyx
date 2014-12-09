@@ -50,6 +50,18 @@ cdef class FastPerceptronTagger:
         cdef vector[tag_t] tags
         self._tag_sentences(sentences, tags)
         return tags
+    
+    def tag(self, tokens):
+        '''
+        Tag a single sentence of tokens
+        Returns the list of tagged token tuples:
+            [('The', 'DT', 'first', 'JJ', ....]
+        '''
+        cdef vector[tag_t] tags
+        cdef vector[vector[string] ] sentence
+        sentence.push_back(tokens)
+        self._taggerptr.tag_sentences(sentence, tags)
+        return tags[0]
 
     cdef void _tag_sentences(self, vector[vector[string] ]& document,
                        vector[tag_t]& tags):
