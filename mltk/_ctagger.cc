@@ -10,10 +10,9 @@
 #include "../ext/murmur3.c"
 
 
-// use a custom hash function for the string... evidently murmurhash
-// is pretty fast
 uint32_t const SEED = 5;
 
+/// Use murmurhash as a custom has for the string
 uint64_t murmurhash3(const std::string& key)
 {
     uint64_t ret[2];   // need 128 bits of space to hold result
@@ -22,7 +21,7 @@ uint64_t murmurhash3(const std::string& key)
 }
 
 
-/*
+/**
 perceptron tagger implemented as follows
 
 Want to predict C classes with F features and a bias
@@ -38,29 +37,29 @@ as a C dimensional float.
 Predict sums up the C dim arrays for each feature value
 */
 
-// features used to predict a given POS
+/// features used to predict a given POS
 typedef std::vector<std::string> features_t;
 
-// weights for individual classes for each feature
+/// weights for individual classes for each feature
 typedef std::vector<float> class_weights_t;
 typedef class_weights_t bias_weights_t;
 
-// the weights for one feature (word -> class weights)
+/// the weights for one feature (word -> class weights)
 typedef std::tr1::unordered_map<std::string, class_weights_t,
     std::tr1::function<unsigned long(const std::string&)> > one_weight_t;
 
-// all weights for all features
+/// all weights for all features
 typedef std::vector<one_weight_t> weights_t;
 
-// some words always have a defined tag
+/// some words always have a defined tag
 typedef std::tr1::unordered_map<std::string, std::string,
     std::tr1::function<unsigned long(const std::string&)> > tagmap_t;
 
-// tags are tuples of (token, tag)
+/// tags are tuples of (token, tag)
 typedef std::vector<std::pair<std::string, std::string> > tag_t;
 
-// it's easier to pass things in as std::map from cython
-// since it doesn't require dragging along the custom hash...
+/** it's easier to pass things in as std::map from cython
+ since it doesn't require dragging along the custom hash... */
 typedef std::vector<std::pair<std::string, float> > class_weights_in_t;
 typedef std::vector<std::map<std::string, class_weights_in_t> > weights_in_t;
 typedef std::map<std::string, std::string> tagmap_in_t;
@@ -71,10 +70,11 @@ typedef std::map<std::string, std::string> tagmap_in_t;
 // utilities
 std::string normalize(std::string const & word)
 {
-    // normalize a word.
-    // - All words are lower cased
-    // - 4 letter digits are represented as !YEAR
-    // - Other digits are represented as !DIGITS
+    /**< normalize a word.
+     - All words are lower cased
+     - 4 letter digits are represented as !YEAR
+     - Other digits are represented as !DIGITS
+    */
     if (word.find("-") != std::string::npos && word != "-")
         return "!HYPHEN";
     else if (word.find_first_not_of("0123456789") == std::string::npos &&
@@ -94,7 +94,7 @@ std::string normalize(std::string const & word)
 
 std::string last_n_letters(std::string const & s, int n)
 {
-    // get the last three letters (or less) of the string
+    ///< get the last three letters (or less) of the string
     if (s.length() > n)
         return s.substr(s.length() - n);
     else
@@ -106,8 +106,8 @@ const std::string SPACE = " ";
 
 std::string join(std::string& s1, std::string& s2)
 {
-    // join with a space in the center
-    // find the length of the final string, reserve it then append
+    /**< join with a space in the center
+     find the length of the final string, reserve it then append */
     std::string sout;
     sout.reserve(s1.length() + s2.length() + 1);
     sout.append(s1);
@@ -123,7 +123,7 @@ void get_features(std::size_t k,
     std::string& prev2,
     features_t& features)
 {
-    // create some features for the given word
+    //< create some features for the given word
     std::size_t i = k + 2;
 
     std::string suffix;
@@ -264,10 +264,10 @@ class PerceptronTagger
             tagmap_in_t specified_tags);
         ~PerceptronTagger();
 
-        // tags a single sentence
+        /// tags a single sentence
         tag_t tag_sentence(std::vector<std::string> const & sentence);
 
-        // tag a document that has been sentence and word tokenized
+        /// tag a document that has been sentence and word tokenized
         void tag_sentences(
             std::vector<std::vector<std::string> >& document,
             std::vector<tag_t>& tags
