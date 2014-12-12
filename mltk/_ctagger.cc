@@ -12,10 +12,12 @@
 
 // use a custom hash function for the string... evidently murmurhash
 // is pretty fast
+uint32_t const SEED = 5;
+
 uint64_t murmurhash3(const std::string& key)
 {
     uint64_t ret[2];   // need 128 bits of space to hold result
-    MurmurHash3_x64_128(key.c_str(), key.length(), 5, ret);
+    MurmurHash3_x64_128(key.c_str(), key.length(), SEED, ret);
     return ret[0];
 }
 
@@ -67,7 +69,7 @@ typedef std::map<std::string, std::string> tagmap_in_t;
 
 //------------------------------------------------------
 // utilities
-std::string normalize(std::string& word)
+std::string normalize(std::string const & word)
 {
     // normalize a word.
     // - All words are lower cased
@@ -90,7 +92,7 @@ std::string normalize(std::string& word)
     }
 }
 
-std::string last_n_letters(std::string& s, int n)
+std::string last_n_letters(std::string const & s, int n)
 {
     // get the last three letters (or less) of the string
     if (s.length() > n)
@@ -115,7 +117,7 @@ std::string join(std::string& s1, std::string& s2)
 }
 
 void get_features(std::size_t k,
-    std::string& word,
+    std::string const & word,
     std::vector<std::string>& context,
     std::string& prev,
     std::string& prev2,
@@ -165,7 +167,7 @@ class AveragedPerceptron
         AveragedPerceptron(weights_in_t weights,
             class_weights_in_t bias_weights);
         ~AveragedPerceptron();
-        std::string predict(features_t& features);
+        std::string predict(features_t const & features);
 
     private:
         weights_t weights;
@@ -217,7 +219,7 @@ AveragedPerceptron::AveragedPerceptron(
 
 AveragedPerceptron::~AveragedPerceptron() {}
 
-std::string AveragedPerceptron::predict(features_t& features)
+std::string AveragedPerceptron::predict(features_t const & features)
 {
     // make a prediction - add all the class scores from the features/weights
     // and return the max
@@ -226,7 +228,7 @@ std::string AveragedPerceptron::predict(features_t& features)
     std::vector<float> scores(bias_weights);
 
     // now read through the features
-    one_weight_t::iterator got;
+    one_weight_t::const_iterator got;
     for (std::size_t k = 0; k < NFEATURES; ++k)
     {
         std::string feature = features[k];
@@ -263,7 +265,7 @@ class PerceptronTagger
         ~PerceptronTagger();
 
         // tags a single sentence
-        tag_t tag_sentence(std::vector<std::string>& sentence);
+        tag_t tag_sentence(std::vector<std::string> const & sentence);
 
         // tag a document that has been sentence and word tokenized
         void tag_sentences(
@@ -292,16 +294,16 @@ PerceptronTagger::PerceptronTagger(
 
 PerceptronTagger::~PerceptronTagger() {}
 
-tag_t PerceptronTagger::tag_sentence(std::vector<std::string>& sentence)
+tag_t PerceptronTagger::tag_sentence(std::vector<std::string> const & sentence)
 {
     // tag a single sentence
     tag_t tags;
-    tags.clear();
 
     // make the context for each word
     std::vector<std::string> context;
+    context.reserve(sentence.size() + 4);
     context.push_back("-START-"); context.push_back("-START2-");
-    for (std::vector<std::string>::iterator it = sentence.begin();
+    for (std::vector<std::string>::const_iterator it = sentence.begin();
             it != sentence.end(); ++it)
         context.push_back(normalize(*it));
     context.push_back("-END-"); context.push_back("-END2-");
@@ -311,17 +313,14 @@ tag_t PerceptronTagger::tag_sentence(std::vector<std::string>& sentence)
     std::string prev2 = "-START2-";
 
     features_t features;
-    tagmap_t::iterator got;
-
-    std::string word;
-    std::string tag;
 
     for (std::size_t i=0; i < sentence.size(); ++i)
     {
-        word = sentence[i];
+        std::string tag;
+        std::string const & word = sentence[i];
 
         // check if the word is in the set of specified tags
-        got = specified_tags.find(word);
+        tagmap_t::const_iterator got = specified_tags.find(word);
         if (got != specified_tags.end())
         {
             tag = got->second;
@@ -333,7 +332,7 @@ tag_t PerceptronTagger::tag_sentence(std::vector<std::string>& sentence)
             get_features(i, word, context, prev, prev2, features);
             tag = model.predict(features);
         }
-        tags.push_back(std::make_pair<std::string, std::string>(word, tag));
+        tags.push_back(std::make_pair(word, tag));
 
         prev2 = prev;
         prev = tag;
@@ -347,7 +346,7 @@ void PerceptronTagger::tag_sentences(
     std::vector<tag_t>& tags)
 {
     tags.clear();
-    std::vector<std::vector<std::string> >::iterator it;
+    std::vector<std::vector<std::string> >::const_iterator it;
     for (it = document.begin(); it != document.end(); ++it)
         tags.push_back(tag_sentence(*it));
 }
