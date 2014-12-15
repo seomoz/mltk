@@ -242,7 +242,7 @@ std::string AveragedPerceptron::predict(features_t const & features)
     }
 
     // now find the maximum class associated with the scores
-    float max_score = -1.0e-20;
+    float max_score = -1.0e20;
     std::string chosen_class;
     for (std::size_t i = 0; i < NTAGS; ++i)
     {
