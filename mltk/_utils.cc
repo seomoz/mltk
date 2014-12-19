@@ -4,9 +4,50 @@
 
 #include "../ext/murmur3.c"
 
-uint32_t const SEED = 5;
 
-/// Use murmurhash as a custom has for the string
+/**
+    Define an interface for the taggers/chunkers/parsers/etc.
+
+    These are stages of the pipeline that operate on a single sentence,
+    as represented as a list of a templated types.  They have templated
+    types for both input and output types.
+
+    TIN is representation for a single word (e.g. string, (string, POS), etc
+    TOUT is representation for the tagged version of word
+    Subclasses implement tag_sentence(single sentence) and base class
+        tags entire documents by looping over sentences
+*/
+template <class TIN, class TOUT>
+class TaggerBase
+{
+    public:
+        /// tags a single sentence.  Subclasses implement
+        virtual std::vector<TOUT> tag_sentence(std::vector<TIN> const &) {}
+
+        /// tag a document as a list of sentences
+        void tag_sentences(std::vector<std::vector<TIN> >& document,
+            std::vector<std::vector<TOUT> >& tags);
+
+    private:
+
+};
+
+template <class TIN, class TOUT>
+void TaggerBase<TIN, TOUT>::tag_sentences(
+    std::vector<std::vector<TIN> >& document,
+    std::vector<std::vector<TOUT> >& tags)
+{
+    tags.clear();
+    tags.reserve(document.size());
+    typename std::vector<std::vector<TIN> >::const_iterator it;
+    for (it = document.begin(); it != document.end(); ++it)
+        tags.push_back(tag_sentence(*it));
+}
+
+
+/// Use murmurhash as a custom hash for the string
+#define SEED 5
+
 uint64_t murmurhash3(const std::string& key)
 {
     uint64_t ret[2];   // need 128 bits of space to hold result

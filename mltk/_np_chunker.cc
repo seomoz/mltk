@@ -24,7 +24,7 @@ typedef std::tr1::unordered_map<std::string, char,
 typedef std::map<std::string, char> np_labelmap_in_t;
 
 /// Input to the chunker are already tokenized, POS tagged sentences
-typedef std::vector<std::pair<std::string, std::string> > tag_t;
+typedef std::pair<std::string, std::string> tag_t;
 
 struct iob_t {
     std::string token;
@@ -106,18 +106,14 @@ inline uint64_t feature_hash(const std::string& key)
 // the number of possible output classes (I, O, B)
 #define N_CLASSES 3
 
-class FastNPChunker 
+class FastNPChunker : public TaggerBase<tag_t, iob_t>
 {
     public:
         FastNPChunker(np_weights_t weights, np_labelmap_in_t labelmap_in);
         ~FastNPChunker();
 
         /// Given a POS tagged sentence, return IOB labels for each token
-        iob_label_t iob_sentence(tag_t const & sentence);
-
-        /// Given a document of POS tagged sentences, return IOB labels
-        void iob_sentences(
-            std::vector<tag_t>& document, std::vector<iob_label_t>& iob);
+        iob_label_t tag_sentence(std::vector<tag_t> const & sentence);
 
     private:
         // the weights are logically a 2D matrix of (n_features, n_classes)
@@ -185,7 +181,7 @@ void FastNPChunker::compute_scores(np_features_t const & features,
     }
 }
 
-iob_label_t FastNPChunker::iob_sentence(tag_t const & sentence)
+iob_label_t FastNPChunker::tag_sentence(std::vector<tag_t> const & sentence)
 {
     iob_label_t ret;
     ret.reserve(sentence.size());
@@ -197,7 +193,8 @@ iob_label_t FastNPChunker::iob_sentence(tag_t const & sentence)
     tag_context.reserve(sentence.size() + 4);
     context.push_back("-START-"); context.push_back("-START2-");
     tag_context.push_back("-START-"); tag_context.push_back("-START2-");
-    for (tag_t::const_iterator it = sentence.begin(); it != sentence.end(); ++it)
+    for (std::vector<tag_t>::const_iterator it = sentence.begin();
+        it != sentence.end(); ++it)
     {
         context.push_back(normalize(it->first));
         tag_context.push_back(it->second);
@@ -254,14 +251,4 @@ iob_label_t FastNPChunker::iob_sentence(tag_t const & sentence)
     return ret;
 }
 
-
-void FastNPChunker::iob_sentences(
-    std::vector<tag_t>& document, std::vector<iob_label_t>& iob)
-{
-    iob.clear();
-    iob.reserve(document.size());
-    std::vector<tag_t>::const_iterator it;
-    for (it = document.begin(); it != document.end(); ++it)
-        iob.push_back(iob_sentence(*it));
-}
 

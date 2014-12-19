@@ -54,7 +54,7 @@ cdef class NPChunker:
             # we'll implement this shortly..
             raise ValueError
         else:
-            self._iob_sentences(sentences, iob_labels)
+            self._tag_sentences(sentences, iob_labels)
             return self._unpack_struct(iob_labels)
 
     def _unpack_struct(self, iob_labels):
@@ -65,8 +65,8 @@ cdef class NPChunker:
                 for label in sentence])
         return ret
 
-    cdef void _iob_sentences(
-        self, vector[tag_t]& document, vector[iob_label_t]& iob):
+    cdef void _tag_sentences(
+        self, vector[vector[tag_t] ]& document, vector[iob_label_t]& iob):
         '''forwarding method'''
-        self._chunkerptr.iob_sentences(document, iob)
+        self._chunkerptr.tag_sentences(document, iob)
 

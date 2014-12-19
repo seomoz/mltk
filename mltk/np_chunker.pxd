@@ -10,7 +10,7 @@ from libcpp.map cimport map
 cdef extern from "_np_chunker.cc":
     ctypedef vector[float] np_weights_t
     ctypedef map[string, char] np_labelmap_in_t
-    ctypedef vector[pair[string, string] ] tag_t
+    ctypedef pair[string, string] tag_t
     ctypedef struct iob_t:
         string token
         string tag
@@ -21,12 +21,12 @@ cdef extern from "_np_chunker.cc":
         FastNPChunker(
             np_weights_t weights,
             np_labelmap_in_t labelmap_in)
-        void iob_sentences(
-            vector[tag_t]& document, vector[iob_label_t]& iob)
+        void tag_sentences(
+            vector[vector[tag_t] ]& document, vector[iob_label_t]& iob)
 
 # only need to define C attributes and methods here
 cdef class NPChunker:
     cdef FastNPChunker *_chunkerptr
-    cdef void _iob_sentences(
-        self, vector[tag_t]& document, vector[iob_label_t]& iob)
+    cdef void _tag_sentences(
+        self, vector[vector[tag_t] ]& document, vector[iob_label_t]& iob)
 

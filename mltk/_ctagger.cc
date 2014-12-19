@@ -45,7 +45,7 @@ typedef std::tr1::unordered_map<std::string, std::string,
     std::tr1::function<unsigned long(const std::string&)> > tagmap_t;
 
 /// tags are tuples of (token, tag)
-typedef std::vector<std::pair<std::string, std::string> > tag_t;
+typedef std::pair<std::string, std::string> tag_t;
 
 /** it's easier to pass things in as std::map from cython
  since it doesn't require dragging along the custom hash... */
@@ -205,8 +205,7 @@ std::string AveragedPerceptron::predict(features_t const & features)
     return chosen_class;
 }
 
-
-class PerceptronTagger
+class PerceptronTagger : public TaggerBase<std::string, tag_t>
 {
     public:
         PerceptronTagger(weights_in_t weights, class_weights_in_t bias_weights,
@@ -214,13 +213,8 @@ class PerceptronTagger
         ~PerceptronTagger();
 
         /// tags a single sentence
-        tag_t tag_sentence(std::vector<std::string> const & sentence);
-
-        /// tag a document that has been sentence and word tokenized
-        void tag_sentences(
-            std::vector<std::vector<std::string> >& document,
-            std::vector<tag_t>& tags
-        );
+        std::vector<tag_t> tag_sentence(
+            std::vector<std::string> const & sentence);
 
     private:
         tagmap_t specified_tags;
@@ -243,10 +237,11 @@ PerceptronTagger::PerceptronTagger(
 
 PerceptronTagger::~PerceptronTagger() {}
 
-tag_t PerceptronTagger::tag_sentence(std::vector<std::string> const & sentence)
+std::vector<tag_t> PerceptronTagger::tag_sentence(
+    std::vector<std::string> const & sentence)
 {
     // tag a single sentence
-    tag_t tags;
+    std::vector<tag_t> tags;
 
     // make the context for each word
     std::vector<std::string> context;
@@ -288,15 +283,5 @@ tag_t PerceptronTagger::tag_sentence(std::vector<std::string> const & sentence)
     }
 
     return tags;
-}
-
-void PerceptronTagger::tag_sentences(
-    std::vector<std::vector<std::string> >& document,
-    std::vector<tag_t>& tags)
-{
-    tags.clear();
-    std::vector<std::vector<std::string> >::const_iterator it;
-    for (it = document.begin(); it != document.end(); ++it)
-        tags.push_back(tag_sentence(*it));
 }
 
