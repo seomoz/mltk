@@ -41,7 +41,7 @@ class TestNPChunker(unittest.TestCase):
             ('industrial', 'JJ', 'I'), ('conglomerate', 'NN', 'I'),
             ('.', '.', 'O')]]
         text_tags = [[(t[0], t[1]) for t in sent] for sent in text_tags_iob]
-        iob_labels = chunker.chunk_sents(text_tags)
+        iob_labels = chunker.chunk_sents(text_tags, True)
         self.assertListEqual(text_tags_iob, iob_labels)
 
     def test_empty(self):
@@ -52,7 +52,7 @@ class TestNPChunker(unittest.TestCase):
             [],
             [('The', 'DT'), ('empty', 'NN'), ('', 'NN'), ('POS', ''), ('', ''),
                 ('.', '.')]]
-        chunks = chunker.chunk_sents(sentences)
+        chunks = chunker.chunk_sents(sentences, True)
         self.assertEqual(
             chunks,
             [[], 
@@ -72,10 +72,10 @@ class TestNPChunker(unittest.TestCase):
         # unicode must be decoded to utf-8 or it raises an error
         tags_unicode = [[(token.decode('utf-8'), tag) for token, tag in tags]]
         self.assertRaises(
-            UnicodeEncodeError, chunker.chunk_sents, tags_unicode)
+            UnicodeEncodeError, chunker.chunk_sents, tags_unicode, True)
 
         # but things work if the tokens are encoded as bytes
-        iob_labels = chunker.chunk_sents([tags])[0]
+        iob_labels = chunker.chunk_sents([tags], True)[0]
         self.assertEqual(
             iob_labels,
                 [('Beyonc\xc3\xa9', 'NNP', 'B'),

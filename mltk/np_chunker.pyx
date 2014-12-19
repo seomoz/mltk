@@ -50,8 +50,9 @@ cdef class NPChunker:
         # we'll call the C method and let Cython do the automatic conversion
         cdef vector[iob_label_t] iob_labels
 
-        if iob:
-            return None
+        if not iob:
+            # we'll implement this shortly..
+            raise ValueError
         else:
             self._iob_sentences(sentences, iob_labels)
             return self._unpack_struct(iob_labels)
