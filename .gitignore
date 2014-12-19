@@ -17,4 +17,5 @@ build
 
 # these are cython genenerated files in the build process
 mltk/aptagger.cpp
+mltk/np_chunker.cpp
 
