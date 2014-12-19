@@ -38,6 +38,18 @@ class TestFastPerceptronTagger(unittest.TestCase):
         tags = tagger.tag_sents(text)
         self.assertListEqual(tags, text_tags)
 
+    def test_empty(self):
+        '''
+        The tagger works OK if it's passed empty tokens, or empty sentences
+        '''
+        sentences = [[], ['This', 'has', 'an', 'empty', '', 'token', '.']]
+        tags = tagger.tag_sents(sentences)
+        self.assertEqual(
+            tags,
+            [[], [('This', 'DT'), ('has', 'VBZ'), ('an', 'DT'),
+            ('empty', 'JJ'), ('', 'NN'), ('token', 'NN'), ('.', '.')]]
+        )
+
     def test_unicode(self):
         sentence = u'Beyonc\u00e9 performed during half time of Super Bowl'
         sentence += ' XLVII .'
