@@ -7,10 +7,12 @@ ext_modules = [
     Extension(
         "mltk.aptagger",
         sources=['mltk/aptagger.pyx'],
+        extra_compile_args=['-std=c++0x'],
         language="c++"),
     Extension(
         "mltk.np_chunker",
         sources=['mltk/np_chunker.pyx'],
+        extra_compile_args=['-std=c++0x'],
         language="c++")
 ]
 

@@ -6,5 +6,6 @@ cache:
   - apt
   - pip
 install:
+  - g++ --version
   - pip install -r requirements.txt --use-mirrors
   - python setup.py build_ext --inplace
