@@ -1,11 +1,11 @@
 
 #include <iostream>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <string>
 #include <map>
 #include <vector>
 #include <algorithm>
-#include <tr1/functional>
+#include <functional>
 
 #include "_utils.cc"
 
@@ -34,15 +34,15 @@ typedef std::vector<float> class_weights_t;
 typedef class_weights_t bias_weights_t;
 
 /// the weights for one feature (word -> class weights)
-typedef std::tr1::unordered_map<std::string, class_weights_t,
-    std::tr1::function<unsigned long(const std::string&)> > one_weight_t;
+typedef std::unordered_map<std::string, class_weights_t,
+    std::function<unsigned long(const std::string&)> > one_weight_t;
 
 /// all weights for all features
 typedef std::vector<one_weight_t> weights_t;
 
 /// some words always have a defined tag
-typedef std::tr1::unordered_map<std::string, std::string,
-    std::tr1::function<unsigned long(const std::string&)> > tagmap_t;
+typedef std::unordered_map<std::string, std::string,
+    std::function<unsigned long(const std::string&)> > tagmap_t;
 
 /// tags are tuples of (token, tag)
 typedef std::pair<std::string, std::string> tag_t;

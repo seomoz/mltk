@@ -2,9 +2,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <map>
-#include <tr1/functional>
+#include <functional>
 
 #include "_utils.cc"
 
@@ -16,8 +16,8 @@ typedef std::vector<std::string> np_features_t;
 typedef std::vector<float> np_weights_t;
 
 /// some words always have a defined label
-typedef std::tr1::unordered_map<std::string, char,
-    std::tr1::function<unsigned long(const std::string&)> > np_labelmap_t;
+typedef std::unordered_map<std::string, char,
+    std::function<unsigned long(const std::string&)> > np_labelmap_t;
 
 /** it's easier to pass things in as std::map from cython
  since it doesn't require dragging along the custom hash... */
