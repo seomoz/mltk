@@ -49,10 +49,11 @@ cdef class NPChunker:
         '''
         # we'll call the C method and let Cython do the automatic conversion
         cdef vector[iob_label_t] iob_labels
+        cdef vector[vector[np_t] ] noun_phrases
 
         if not iob:
-            # we'll implement this shortly..
-            raise ValueError
+            self._chunk_sentences(sentences, noun_phrases)
+            return noun_phrases
         else:
             self._tag_sentences(sentences, iob_labels)
             return self._unpack_struct(iob_labels)
@@ -65,8 +66,13 @@ cdef class NPChunker:
                 for label in sentence])
         return ret
 
-    cdef void _tag_sentences(
-        self, vector[vector[tag_t] ]& document, vector[iob_label_t]& iob):
+    cdef void _tag_sentences(self,
+        vector[vector[tag_t] ]& document, vector[iob_label_t]& iob):
         '''forwarding method'''
         self._chunkerptr.tag_sentences(document, iob)
+
+    cdef void _chunk_sentences(self,
+        vector[vector[tag_t] ]& document, vector[vector[np_t] ]& noun_phrases):
+        '''forwarding method'''
+        self._chunkerptr.chunk_sentences(document, noun_phrases)
 

@@ -22,7 +22,7 @@ class TaggerBase
 {
     public:
         /// tags a single sentence.  Subclasses implement
-        virtual std::vector<TOUT> tag_sentence(std::vector<TIN> const &) {}
+        virtual std::vector<TOUT> tag_sentence(std::vector<TIN> const &) = 0;
 
         /// tag a document as a list of sentences
         void tag_sentences(std::vector<std::vector<TIN> >& document,

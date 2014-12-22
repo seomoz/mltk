@@ -16,6 +16,7 @@ cdef extern from "_np_chunker.cc":
         string tag
         char label
     ctypedef vector[iob_t] iob_label_t
+    ctypedef vector[tag_t] np_t;
 
     cdef cppclass FastNPChunker:
         FastNPChunker(
@@ -23,10 +24,16 @@ cdef extern from "_np_chunker.cc":
             np_labelmap_in_t labelmap_in)
         void tag_sentences(
             vector[vector[tag_t] ]& document, vector[iob_label_t]& iob)
+        void chunk_sentences(
+            vector[vector[tag_t] ]& document,
+            vector[vector[np_t] ] & noun_phrases)
 
 # only need to define C attributes and methods here
 cdef class NPChunker:
     cdef FastNPChunker *_chunkerptr
     cdef void _tag_sentences(
         self, vector[vector[tag_t] ]& document, vector[iob_label_t]& iob)
+    cdef void _chunk_sentences(
+        self, vector[vector[tag_t] ]& document,
+        vector[vector[np_t] ] & noun_phrases)
 

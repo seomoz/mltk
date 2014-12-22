@@ -37,6 +37,9 @@ struct iob_t {
 /// Output from the chunker are tags + the IOB labels
 typedef std::vector<iob_t> iob_label_t;
 
+/// Instead of IOB labels, also allow the option to output noun phrases
+typedef std::vector<tag_t> np_t;
+
 
 void get_features(std::size_t k,
     std::string const & word,
@@ -114,6 +117,11 @@ class FastNPChunker : public TaggerBase<tag_t, iob_t>
 
         /// Given a POS tagged sentence, return IOB labels for each token
         iob_label_t tag_sentence(std::vector<tag_t> const & sentence);
+
+        /// Given POS tagged sentences, return NP only
+        void chunk_sentences(
+            std::vector<std::vector<tag_t> > & sentences,
+            std::vector<std::vector<np_t> > & noun_phrases);
 
     private:
         // the weights are logically a 2D matrix of (n_features, n_classes)
@@ -252,3 +260,62 @@ iob_label_t FastNPChunker::tag_sentence(std::vector<tag_t> const & sentence)
 }
 
 
+void FastNPChunker::chunk_sentences(
+            std::vector<std::vector<tag_t> > & sentences,
+            std::vector<std::vector<np_t> > & noun_phrases)
+{
+    // strategy: first find IOB labels, then make NP chunks
+    std::vector<iob_label_t> iob_labels;
+    tag_sentences(sentences, iob_labels);
+
+    noun_phrases.clear();
+    noun_phrases.reserve(sentences.size());
+    np_t noun_phrase;
+    std::vector<np_t> sentence_chunks;
+    for (std::vector<iob_label_t>::const_iterator it = iob_labels.begin();
+        it != iob_labels.end(); ++it)
+    {
+        // iterate through the sentence and make chunks
+        sentence_chunks.clear();
+        noun_phrase.clear();
+        for (iob_label_t::const_iterator it_sentence = it->begin();
+            it_sentence != it->end(); ++it_sentence)
+        {
+            // it points to std::vector<iob_t> (token, tag, label)
+            if (it_sentence->label == 'I')
+            {
+                // inside a NP.  add this token to the current phrase
+                noun_phrase.push_back(std::make_pair(
+                    it_sentence->token, it_sentence->tag));
+            }
+            else
+            {
+                // beginning a new chunk - either NP or other
+                // add current noun phrase to the sentence if necessary
+                if (noun_phrase.size() > 0)
+                {
+                    sentence_chunks.push_back(noun_phrase);
+                    noun_phrase.clear();
+                }
+
+                // check to see if we started a new NP
+                if (it_sentence->label == 'B')
+                    noun_phrase.push_back(std::make_pair(
+                        it_sentence->token, it_sentence->tag));
+            }
+        }
+
+        // end of the sentence.  check to see if we need to add the
+        // last phrase
+        if (noun_phrase.size() > 0)
+            sentence_chunks.push_back(noun_phrase);
+
+        // add this sentence to all the phrases
+        noun_phrases.push_back(sentence_chunks);
+    }
+}
+
+int main(void)
+{
+    return 0;
+}

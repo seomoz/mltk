@@ -9,11 +9,8 @@ chunker = NPChunker()
 
 
 class TestNPChunker(unittest.TestCase):
-    def test_chunk_sents_iob(self):
-        '''
-        The chunker returns reasonable IOB labels
-        '''
-        text_tags_iob = [
+    def setUp(self):
+        self.text_tags_iob = [
             [('Pierre', 'NNP', 'B'), ('Vinken', 'NNP', 'I'), (',', ',', 'O'),
             ('61', 'CD', 'B'), ('years', 'NNS', 'I'), ('old', 'JJ', 'O'),
             (',', ',', 'O'), ('will', 'MD', 'O'), ('join', 'VB', 'O'),
@@ -40,10 +37,50 @@ class TestNPChunker(unittest.TestCase):
             ('of', 'IN', 'O'), ('this', 'DT', 'B'), ('British', 'JJ', 'I'),
             ('industrial', 'JJ', 'I'), ('conglomerate', 'NN', 'I'),
             ('.', '.', 'O')]]
-        text_tags = [[(t[0], t[1]) for t in sent] for sent in text_tags_iob]
-        iob_labels = chunker.chunk_sents(text_tags, True)
-        self.assertListEqual(text_tags_iob, iob_labels)
 
+    def test_chunk_sents_iob(self):
+        '''
+        The chunker returns reasonable IOB labels
+        '''
+        text_tags = [[(t[0], t[1]) for t in sent]
+            for sent in self.text_tags_iob]
+        iob_labels = chunker.chunk_sents(text_tags, True)
+        self.assertListEqual(self.text_tags_iob, iob_labels)
+
+    def test_chunk_sents(self):
+        '''
+        The chunker returns noun phrases
+        '''
+        text_tags = [[(t[0], t[1]) for t in sent] 
+            for sent in self.text_tags_iob]
+        noun_phrases = chunker.chunk_sents(text_tags)
+        expected_phrases = [
+    [[('Pierre', 'NNP'), ('Vinken', 'NNP')],
+    [('61', 'CD'), ('years', 'NNS')],
+    [('the', 'DT'), ('board', 'NN')],
+    [('a', 'DT'), ('nonexecutive', 'JJ'), ('director', 'NN')],
+    [('Nov.', 'NNP'), ('29', 'CD')]],
+
+    [[('Mr.', 'NNP'), ('Vinken', 'NNP')],
+    [('chairman', 'NN')],
+    [('Elsevier', 'NNP'), ('N.V.', 'NNP')],
+    [('the', 'DT'), ('Dutch', 'NNP'), ('publishing', 'NN'), ('group', 'NN')]],
+
+    [[('Rudolph', 'NNP'), ('Agnew', 'NNP')],
+    [('55', 'CD'), ('years', 'NNS')],
+    [('chairman', 'NN')],
+    [('Consolidated', 'NNP'),
+    ('Gold', 'NNP'),
+    ('Fields', 'NNP'),
+    ('PLC', 'NNP')],
+    [('a', 'DT'), ('nonexecutive', 'JJ'), ('director', 'NN')],
+    [('this', 'DT'),
+    ('British', 'JJ'),
+    ('industrial', 'JJ'),
+    ('conglomerate', 'NN')]]]
+
+        self.assertEqual(noun_phrases, expected_phrases)
+    
     def test_empty(self):
         '''
         The chunker works OK if it's passed empty tokens, or empty sentences
@@ -64,6 +101,11 @@ class TestNPChunker(unittest.TestCase):
               ('.', '.', 'O')]]
         )
 
+        np_chunks = chunker.chunk_sents(sentences)
+        self.assertEqual(
+            np_chunks,
+            [[], [[('The', 'DT'), ('empty', 'NN'), ('', 'NN')]]])
+
     def test_unicode(self):
         sentence = u'Beyonc\u00e9 performed during half time of Super Bowl'
         sentence += ' XLVII .'
@@ -75,19 +117,12 @@ class TestNPChunker(unittest.TestCase):
             UnicodeEncodeError, chunker.chunk_sents, tags_unicode, True)
 
         # but things work if the tokens are encoded as bytes
-        iob_labels = chunker.chunk_sents([tags], True)[0]
+        iob_labels = chunker.chunk_sents([tags])[0]
         self.assertEqual(
             iob_labels,
-                [('Beyonc\xc3\xa9', 'NNP', 'B'),
-                 ('performed', 'VBN', 'O'),
-                 ('during', 'IN', 'O'),
-                 ('half', 'DT', 'B'),
-                 ('time', 'NN', 'I'),
-                 ('of', 'IN', 'O'),
-                 ('Super', 'NNP', 'B'),
-                 ('Bowl', 'NNP', 'I'),
-                 ('XLVII', 'NNP', 'I'),
-                 ('.', '.', 'O')])
+                [[('Beyonc\xc3\xa9', 'NNP')],
+                 [('half', 'DT'), ('time', 'NN')],
+                 [('Super', 'NNP'), ('Bowl', 'NNP'), ('XLVII', 'NNP')]])
 
 
 if __name__ == '__main__':
