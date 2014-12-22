@@ -124,6 +124,11 @@ class TestNPChunker(unittest.TestCase):
                  [('half', 'DT'), ('time', 'NN')],
                  [('Super', 'NNP'), ('Bowl', 'NNP'), ('XLVII', 'NNP')]])
 
+    def test_chunk(self):
+        sentence = [('The', 'DT'), ('sentence', 'NN'), ('.', '.')]
+        chunks = chunker.chunk(sentence)
+        self.assertEqual(chunks, [[('The', 'DT'), ('sentence', 'NN')]])
+
 
 if __name__ == '__main__':
     unittest.main()

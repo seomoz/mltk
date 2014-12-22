@@ -46,6 +46,8 @@ cdef class NPChunker:
         If IOB is true then returns the NP-IOB tags for each tokens, e.g.
             [[('The', 'DT', 'B'), ('sentence', 'NN', 'I'), ('.', '.', 'O')],
                  ...]
+        If IOB is false then returns just the noun phrases as (token, tag)
+            tuples
         '''
         # we'll call the C method and let Cython do the automatic conversion
         cdef vector[iob_label_t] iob_labels
@@ -57,6 +59,12 @@ cdef class NPChunker:
         else:
             self._tag_sentences(sentences, iob_labels)
             return self._unpack_struct(iob_labels)
+
+    def chunk(self, sentence, iob=False):
+        '''
+        Sentence = a list of tokens and POS tags
+        '''
+        return self.chunk_sents([sentence])[0]
 
     def _unpack_struct(self, iob_labels):
         ret = []
