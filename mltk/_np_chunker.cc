@@ -315,7 +315,3 @@ void FastNPChunker::chunk_sentences(
     }
 }
 
-int main(void)
-{
-    return 0;
-}
