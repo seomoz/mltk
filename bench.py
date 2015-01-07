@@ -31,8 +31,9 @@ def benchmark_aptagger():
     ncorrect = sum(bool(t == p[1])
         for t, p in izip(tags, chain.from_iterable(predicted)))
 
-    print("Took %s seconds to tag %s sentences (%s tokens)" % (
-        t2 - t1, k, len(tags)))
+    print("For Penn Treebank sample in NLTK:")
+    print("Took %s seconds to POS tag %s tokens (%s tokens/sec)" % (
+        t2 - t1, len(tags), int(len(tags) / (t2 - t1))))
     print("Accuracy: %s" % (float(ncorrect) / len(tags)))
 
 
@@ -134,11 +135,13 @@ def benchmark_np_chunker():
     prec = float(npredicted_correct_chunks) / npredicted_chunks
     recall = float(nactual_predicted_chunks) / nactual_chunks
     f1 = 2 * prec * recall / (prec + recall)
-    print("Precision, Recall, F1 on CoNLL-2000 test set")
-    print((prec, recall, f1))
+    ntokens = sum(len(sent) for sent in all_tokens)
 
-    print("Time for POS tagging: %s" % pos_time)
-    print("Time for NP chunking after POS tagging: %s" % np_time)
-    print("(for %s sentences, %s tokens)" % (
-        len(all_tokens), sum(len(sent) for sent in all_tokens)))
+    print("Benchmarks for CoNLL-2000 test set (%s tokens)" % ntokens)
+    print("Precision, Recall, F1:")
+    print((prec, recall, f1))
+    print("Took %s seconds to POS tag (%s tokens/sec)" % (
+        pos_time, int(ntokens / pos_time)))
+    print("Took %s seconds for NP chunking after POS tagging (%s token/sec)" %
+        (np_time, int(ntokens / np_time)))
 
