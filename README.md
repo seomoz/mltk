@@ -44,10 +44,10 @@ It achieves a F score of 93.1% on the CoNLL-2000 test set (compared
 to published state of the art values of 94.39%).
 
 We made a few modifications to these algorithms to improve the speed
-and compress the model size at the expense of a little accuracy:
+at the expense of a little accuracy:
 
-    * We use feature hashing with a hash size 2^17 which we found to be a good tradeoff between accuracy and model size.
-    * We use a greedy approach instead of beam or other search.
+* We use feature hashing with a hash size 2^17 which we found to be a good tradeoff between accuracy and model size.
+* We use a greedy approach instead of beam or other search.
 
 Usage usage:
 
@@ -69,7 +69,7 @@ Benchmarks
 ----------
 
 The script `bench.py` provides benchmarks for both the POS tagger and
-NP chunker.  The times below were run on a mid 2015 MacBook Pro
+NP chunker.  The times below were run on a mid 2014 MacBook Pro
 (2.5 GHz Intel Core i7).
 
 Our implementation of the POS tagger achieves 98.8% accuracy on the small
