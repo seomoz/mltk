@@ -72,6 +72,43 @@ class TestFastPerceptronTagger(unittest.TestCase):
              ('XLVII', 'NNP'),
              ('.', '.')])
 
+    def test_parenthesis(self):
+        '''Parenthesis should get the right tags'''
+        sentence = 'Here ( are [ some { parenthesis } ] in this sentence . )'
+        tags = tagger.tag(sentence.split())
+        self.assertEqual(
+            tags,
+            [('Here', 'RB'),
+             ('(', '('),
+             ('are', 'VBP'),
+             ('[', '('),
+             ('some', 'DT'),
+             ('{', '('),
+             ('parenthesis', 'NN'),
+             ('}', '}'),
+             (']', ')'),
+             ('in', 'IN'),
+             ('this', 'DT'),
+             ('sentence', 'NN'),
+             ('.', '.'),
+             (')', ')')])
+
+        sentence = 'The USA ( United States of America ) is an acronym .'
+        tags = tagger.tag(sentence.split())
+        self.assertEqual(
+            tags,
+            [('The', 'DT'),
+             ('USA', 'NNP'),
+             ('(', '('),
+             ('United', 'NNP'),
+             ('States', 'NNPS'),
+             ('of', 'IN'),
+             ('America', 'NNP'),
+             (')', ')'),
+             ('is', 'VBZ'),
+             ('an', 'DT'),
+             ('acronym', 'NN'),
+             ('.', '.')])
 
 if __name__ == '__main__':
     unittest.main()
