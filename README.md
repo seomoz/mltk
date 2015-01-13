@@ -48,6 +48,7 @@ at the expense of a little accuracy:
 
 * We use feature hashing with a hash size 2^17 which we found to be a good tradeoff between accuracy and model size.
 * We use a greedy approach instead of beam or other search.
+* We replace the Brill tagger generated POS tags in the training/test data with predictions from the POS tagger in `mltk`.
 
 Usage usage:
 
