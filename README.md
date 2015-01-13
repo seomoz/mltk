@@ -1,7 +1,7 @@
 mltk
 ====
 
-[![Build Status](https://api.travis-ci.org/seomoz/mltk.png)](https://api.travis-ci.org/seomoz/mltk.png)
+[![Build Status](https://api.travis-ci.org/seomoz/mltk.png)](https://travis-ci.org/seomoz/mltk)
 
 mltk - Moz Language Tool Kit.  Like `nltk` but faster.
 
