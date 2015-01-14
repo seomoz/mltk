@@ -4,7 +4,7 @@ clean:
 	# And all of our pyc files
 	rm -f mltk/*.pyc test/*.pyc
 	# All compiled files
-	rm -f mltk/*.so mltk/aptagger.cpp
+	rm -f mltk/*.so mltk/aptagger.cpp mltk/np_chunker.cpp
 	# And lastly, .coverage files
 	rm -f .coverage
 

@@ -38,6 +38,18 @@ class TestFastPerceptronTagger(unittest.TestCase):
         tags = tagger.tag_sents(text)
         self.assertListEqual(tags, text_tags)
 
+    def test_empty(self):
+        '''
+        The tagger works OK if it's passed empty tokens, or empty sentences
+        '''
+        sentences = [[], ['This', 'has', 'an', 'empty', '', 'token', '.']]
+        tags = tagger.tag_sents(sentences)
+        self.assertEqual(
+            tags,
+            [[], [('This', 'DT'), ('has', 'VBZ'), ('an', 'DT'),
+            ('empty', 'JJ'), ('', 'NN'), ('token', 'NN'), ('.', '.')]]
+        )
+
     def test_unicode(self):
         sentence = u'Beyonc\u00e9 performed during half time of Super Bowl'
         sentence += ' XLVII .'
@@ -60,6 +72,43 @@ class TestFastPerceptronTagger(unittest.TestCase):
              ('XLVII', 'NNP'),
              ('.', '.')])
 
+    def test_parenthesis(self):
+        '''Parenthesis should get the right tags'''
+        sentence = 'Here ( are [ some { parenthesis } ] in this sentence . )'
+        tags = tagger.tag(sentence.split())
+        self.assertEqual(
+            tags,
+            [('Here', 'RB'),
+             ('(', '('),
+             ('are', 'VBP'),
+             ('[', '('),
+             ('some', 'DT'),
+             ('{', '('),
+             ('parenthesis', 'NN'),
+             ('}', '}'),
+             (']', ')'),
+             ('in', 'IN'),
+             ('this', 'DT'),
+             ('sentence', 'NN'),
+             ('.', '.'),
+             (')', ')')])
+
+        sentence = 'The USA ( United States of America ) is an acronym .'
+        tags = tagger.tag(sentence.split())
+        self.assertEqual(
+            tags,
+            [('The', 'DT'),
+             ('USA', 'NNP'),
+             ('(', '('),
+             ('United', 'NNP'),
+             ('States', 'NNPS'),
+             ('of', 'IN'),
+             ('America', 'NNP'),
+             (')', ')'),
+             ('is', 'VBZ'),
+             ('an', 'DT'),
+             ('acronym', 'NN'),
+             ('.', '.')])
 
 if __name__ == '__main__':
     unittest.main()

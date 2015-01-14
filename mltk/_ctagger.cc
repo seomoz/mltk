@@ -1,24 +1,13 @@
 
 #include <iostream>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <string>
 #include <map>
 #include <vector>
 #include <algorithm>
-#include <tr1/functional>
+#include <functional>
 
-#include "../ext/murmur3.c"
-
-
-uint32_t const SEED = 5;
-
-/// Use murmurhash as a custom has for the string
-uint64_t murmurhash3(const std::string& key)
-{
-    uint64_t ret[2];   // need 128 bits of space to hold result
-    MurmurHash3_x64_128(key.c_str(), key.length(), SEED, ret);
-    return ret[0];
-}
+#include "_utils.cc"
 
 
 /**
@@ -45,18 +34,18 @@ typedef std::vector<float> class_weights_t;
 typedef class_weights_t bias_weights_t;
 
 /// the weights for one feature (word -> class weights)
-typedef std::tr1::unordered_map<std::string, class_weights_t,
-    std::tr1::function<unsigned long(const std::string&)> > one_weight_t;
+typedef std::unordered_map<std::string, class_weights_t,
+    std::function<unsigned long(const std::string&)> > one_weight_t;
 
 /// all weights for all features
 typedef std::vector<one_weight_t> weights_t;
 
 /// some words always have a defined tag
-typedef std::tr1::unordered_map<std::string, std::string,
-    std::tr1::function<unsigned long(const std::string&)> > tagmap_t;
+typedef std::unordered_map<std::string, std::string,
+    std::function<unsigned long(const std::string&)> > tagmap_t;
 
 /// tags are tuples of (token, tag)
-typedef std::vector<std::pair<std::string, std::string> > tag_t;
+typedef std::pair<std::string, std::string> tag_t;
 
 /** it's easier to pass things in as std::map from cython
  since it doesn't require dragging along the custom hash... */
@@ -65,32 +54,6 @@ typedef std::vector<std::map<std::string, class_weights_in_t> > weights_in_t;
 typedef std::map<std::string, std::string> tagmap_in_t;
 
 
-
-//------------------------------------------------------
-// utilities
-std::string normalize(std::string const & word)
-{
-    /**< normalize a word.
-     - All words are lower cased
-     - 4 letter digits are represented as !YEAR
-     - Other digits are represented as !DIGITS
-    */
-    if (word.find("-") != std::string::npos && word != "-")
-        return "!HYPHEN";
-    else if (word.find_first_not_of("0123456789") == std::string::npos &&
-        word.length() == 4)
-        return "!YEAR";
-    else if (std::isdigit(word[0]))
-        return "!DIGITS";
-    else
-    {
-        // lowercase
-        std::string ret;
-        ret.assign(word);
-        std::transform(ret.begin(), ret.end(), ret.begin(), ::tolower);
-        return ret;
-    }
-}
 
 std::string last_n_letters(std::string const & s, int n)
 {
@@ -101,20 +64,6 @@ std::string last_n_letters(std::string const & s, int n)
         return s.substr(0);
 }
 
-
-const std::string SPACE = " ";
-
-std::string join(std::string& s1, std::string& s2)
-{
-    /**< join with a space in the center
-     find the length of the final string, reserve it then append */
-    std::string sout;
-    sout.reserve(s1.length() + s2.length() + 1);
-    sout.append(s1);
-    sout.append(SPACE);
-    sout.append(s2);
-    return sout;
-}
 
 void get_features(std::size_t k,
     std::string const & word,
@@ -242,7 +191,7 @@ std::string AveragedPerceptron::predict(features_t const & features)
     }
 
     // now find the maximum class associated with the scores
-    float max_score = -1.0e-20;
+    float max_score = -1.0e20;
     std::string chosen_class;
     for (std::size_t i = 0; i < NTAGS; ++i)
     {
@@ -256,8 +205,7 @@ std::string AveragedPerceptron::predict(features_t const & features)
     return chosen_class;
 }
 
-
-class PerceptronTagger
+class PerceptronTagger : public TaggerBase<std::string, tag_t>
 {
     public:
         PerceptronTagger(weights_in_t weights, class_weights_in_t bias_weights,
@@ -265,13 +213,8 @@ class PerceptronTagger
         ~PerceptronTagger();
 
         /// tags a single sentence
-        tag_t tag_sentence(std::vector<std::string> const & sentence);
-
-        /// tag a document that has been sentence and word tokenized
-        void tag_sentences(
-            std::vector<std::vector<std::string> >& document,
-            std::vector<tag_t>& tags
-        );
+        std::vector<tag_t> tag_sentence(
+            std::vector<std::string> const & sentence);
 
     private:
         tagmap_t specified_tags;
@@ -294,10 +237,11 @@ PerceptronTagger::PerceptronTagger(
 
 PerceptronTagger::~PerceptronTagger() {}
 
-tag_t PerceptronTagger::tag_sentence(std::vector<std::string> const & sentence)
+std::vector<tag_t> PerceptronTagger::tag_sentence(
+    std::vector<std::string> const & sentence)
 {
     // tag a single sentence
-    tag_t tags;
+    std::vector<tag_t> tags;
 
     // make the context for each word
     std::vector<std::string> context;
@@ -339,15 +283,5 @@ tag_t PerceptronTagger::tag_sentence(std::vector<std::string> const & sentence)
     }
 
     return tags;
-}
-
-void PerceptronTagger::tag_sentences(
-    std::vector<std::vector<std::string> >& document,
-    std::vector<tag_t>& tags)
-{
-    tags.clear();
-    std::vector<std::vector<std::string> >::const_iterator it;
-    for (it = document.begin(); it != document.end(); ++it)
-        tags.push_back(tag_sentence(*it));
 }
 

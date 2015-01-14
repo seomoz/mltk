@@ -47,7 +47,7 @@ cdef class FastPerceptronTagger:
             [[('The', 'DT'), ('first', 'JJ'), ('.', '.')], ...]
         '''
         # we'll call the C method and let Cython do the automatic conversion
-        cdef vector[tag_t] tags
+        cdef vector[vector[tag_t] ] tags
         self._tag_sentences(sentences, tags)
         return tags
     
@@ -57,14 +57,14 @@ cdef class FastPerceptronTagger:
         Returns the list of tagged token tuples:
             [('The', 'DT', 'first', 'JJ', ....]
         '''
-        cdef vector[tag_t] tags
+        cdef vector[vector[tag_t] ] tags
         cdef vector[vector[string] ] sentence
         sentence.push_back(tokens)
         self._taggerptr.tag_sentences(sentence, tags)
         return tags[0]
 
     cdef void _tag_sentences(self, vector[vector[string] ]& document,
-                       vector[tag_t]& tags):
+                       vector[vector[tag_t] ]& tags):
         '''forwarding method'''
         self._taggerptr.tag_sentences(document, tags)
 
