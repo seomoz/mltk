@@ -110,6 +110,75 @@ class TestFastPerceptronTagger(unittest.TestCase):
              ('acronym', 'NN'),
              ('.', '.')])
 
+    def test_negative_integers(self):
+        sentence = '-1 plus 1 is equal to 0'
+        tags = tagger.tag(sentence.split())
+        self.assertEqual(
+            tags,
+            [('-1', 'CD'),
+             ('plus', 'CC'),
+             ('1', 'CD'),
+             ('is', 'VBZ'),
+             ('equal', 'JJ'),
+             ('to', 'TO'),
+             ('0', 'CD')])
+
+    def test_decimal_numbers(self):
+        sentence = '0.5 is equal to 1 divided by 2'
+        tags = tagger.tag(sentence.split())
+        self.assertEqual(
+            tags,
+            [('0.5', 'CD'),
+             ('is', 'VBZ'),
+             ('equal', 'JJ'),
+             ('to', 'TO'),
+             ('1', 'CD'),
+             ('divided', 'VBN'),
+             ('by', 'IN'),
+             ('2', 'CD')])
+
+    def test_decimal_no_leading_digit(self):
+        sentence = '.5 is equal to 1 divided by 2'
+        tags = tagger.tag(sentence.split())
+        self.assertEqual(
+            tags,
+            [('.5', 'CD'),
+             ('is', 'VBZ'),
+             ('equal', 'JJ'),
+             ('to', 'TO'),
+             ('1', 'CD'),
+             ('divided', 'VBN'),
+             ('by', 'IN'),
+             ('2', 'CD')])
+
+    def test_negative_decimal(self):
+        sentence = '-0.5 is equal to -1 divided by 2'
+        tags = tagger.tag(sentence.split())
+        self.assertEqual(
+            tags,
+            [('-0.5', 'CD'),
+             ('is', 'VBZ'),
+             ('equal', 'JJ'),
+             ('to', 'TO'),
+             ('-1', 'CD'),
+             ('divided', 'VBN'),
+             ('by', 'IN'),
+             ('2', 'CD')])
+
+        sentence = '-.5 is equal to -1 divided by 2'
+        tags = tagger.tag(sentence.split())
+        self.assertEqual(
+            tags,
+            [('-.5', 'CD'),
+             ('is', 'VBZ'),
+             ('equal', 'JJ'),
+             ('to', 'TO'),
+             ('-1', 'CD'),
+             ('divided', 'VBN'),
+             ('by', 'IN'),
+             ('2', 'CD')])
+
+
 if __name__ == '__main__':
     unittest.main()
 

@@ -67,7 +67,19 @@ std::string normalize(std::string const & word)
     else if (word.find_first_not_of("0123456789") == std::string::npos &&
         word.length() == 4)
         return "!YEAR";
-    else if (std::isdigit(word[0]))
+    else if (
+        // positive numbers
+        std::isdigit(word[0]) ||
+
+            ((word.size() > 1) && (
+                // negative numbers
+                (word[0] == '-' && std::isdigit(word[1])) ||
+                // decimal w/o leading digit
+                (word[0] == '.' && std::isdigit(word[1])) ||
+                // negative decimal w/o leading digit
+                ((word.size() > 2) && word[0] == '-' &&
+                    word[1] == '.' && std::isdigit(word[2]))
+    )))
         return "!DIGITS";
     else
     {
