@@ -64,7 +64,7 @@ cdef class NPChunker:
         '''
         Sentence = a list of tokens and POS tags
         '''
-        return self.chunk_sents([sentence])[0]
+        return self.chunk_sents([sentence], iob)[0]
 
     def _unpack_struct(self, iob_labels):
         ret = []

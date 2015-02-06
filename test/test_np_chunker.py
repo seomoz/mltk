@@ -129,6 +129,13 @@ class TestNPChunker(unittest.TestCase):
         chunks = chunker.chunk(sentence)
         self.assertEqual(chunks, [[('The', 'DT'), ('sentence', 'NN')]])
 
+        sentence = [('The', 'DT'), ('sentence', 'NN'), ('.', '.')]
+        chunks_iob = chunker.chunk(sentence, iob=True)
+        self.assertEqual(
+            chunks_iob,
+            [('The', 'DT', 'B'), ('sentence', 'NN', 'I'), ('.', '.', 'O')]
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
