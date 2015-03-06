@@ -136,6 +136,39 @@ class TestNPChunker(unittest.TestCase):
             [('The', 'DT', 'B'), ('sentence', 'NN', 'I'), ('.', '.', 'O')]
         )
 
+class TestNPChunkerRules(unittest.TestCase):
+    def test_combine_np(self):
+        chunker_combine = NPChunker({'combine_np': True})
+
+        document = [
+            "The Statue of Liberty is in the city of New York .".split(),
+            "We visited the statue of liberty last year .".split(),
+            "The Big Apple: aka the city of New York".split(),
+            "The Statue was built in 1886 .".split()
+        ]
+
+        chunks = chunker_combine.chunk_sents(tagger.tag_sents(document))
+
+        expected_chunks = [
+    [[('The', 'DT'), ('Statue', 'NNP'), ('of', 'IN'), ('Liberty', 'NNP')],
+      [('the', 'DT'),
+       ('city', 'NN'),
+       ('of', 'IN'),
+       ('New', 'NNP'),
+       ('York', 'NNP')]],
+     [[('We', 'PRP')],
+      [('the', 'DT'), ('statue', 'NN'), ('of', 'IN'), ('liberty', 'NN')],
+      [('last', 'JJ'), ('year', 'NN')]],
+     [[('The', 'DT'), ('Big', 'NNP'), ('Apple:', 'NNP')],
+      [('the', 'DT'),
+       ('city', 'NN'),
+       ('of', 'IN'),
+       ('New', 'NNP'),
+       ('York', 'NNP')]],
+     [[('The', 'DT'), ('Statue', 'NNP')], [('1886', 'CD')]]]
+
+        self.assertEqual(chunks, expected_chunks)
+
 
 if __name__ == '__main__':
     unittest.main()

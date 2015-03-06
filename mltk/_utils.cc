@@ -1,8 +1,20 @@
 
 #include <string>
 #include <algorithm>
+#include <vector>
 
 #include "../ext/murmur3.c"
+
+#define UTILS
+
+// a tuple of token, tab and NP-IOB label
+struct iob_t {
+    std::string token;
+    std::string tag;
+    char label;
+    iob_t(std::string token, std::string tag, char label) :
+        token(token), tag(tag), label(label) {}
+};
 
 
 /**
@@ -161,4 +173,12 @@ std::string join(const char s1, const char& s2)
     return sout;
 }
 
+std::string lower(const std::string& token)
+{
+    // lower case
+    std::string ret;
+    ret.assign(token);
+    std::transform(ret.begin(), ret.end(), ret.begin(), ::tolower);
+    return ret;
+}
 

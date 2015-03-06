@@ -16,10 +16,19 @@ from gzip import GzipFile
 from StringIO import StringIO
 
 cdef class NPChunker:
-    def __cinit__(self):
+    def __cinit__(self, rules={}):
         '''
         Initialize the chunker.
         Load the model and construct the C++ class
+
+        rules: an optional list of rules to apply after chunking.
+            Currenly supports:
+                combine_np: If True, then combines frequent chunks
+                    that are separated by preposition phrases, e.g.
+                    "Statue of Liberty" is returned as a single
+                    chunk instead of "Statue" and "Liberty" as two separate
+                    ones.  Uses a local bi-gram count over the document to
+                    determine which NPs to combine.  Default is False
         '''
         with GzipFile(
                 fileobj=StringIO(pkgutil.get_data(
@@ -33,7 +42,7 @@ cdef class NPChunker:
         labelmap = {k: ord(v)
             for k, v in model_weights['labelmap'].iteritems()}
         self._chunkerptr = new FastNPChunker(
-            model_weights['weights'], labelmap)
+            model_weights['weights'], labelmap, rules)
 
     def __dealloc__(self):
         del self._chunkerptr

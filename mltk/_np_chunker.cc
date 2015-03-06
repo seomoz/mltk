@@ -6,8 +6,11 @@
 #include <map>
 #include <functional>
 
+#ifndef UTILS
 #include "_utils.cc"
+#endif
 
+#include "_combine_np.cc"
 
 /// features used to predict a given IOB label
 typedef std::vector<std::string> np_features_t;
@@ -26,19 +29,14 @@ typedef std::map<std::string, char> np_labelmap_in_t;
 /// Input to the chunker are already tokenized, POS tagged sentences
 typedef std::pair<std::string, std::string> tag_t;
 
-struct iob_t {
-    std::string token;
-    std::string tag;
-    char label;
-    iob_t(std::string token, std::string tag, char label) :
-        token(token), tag(tag), label(label) {}
-};
-
 /// Output from the chunker are tags + the IOB labels
 typedef std::vector<iob_t> iob_label_t;
 
 /// Instead of IOB labels, also allow the option to output noun phrases
 typedef std::vector<tag_t> np_t;
+
+/// Some optional rules to apply to the chunks
+typedef std::map<std::string, bool> rules_t;
 
 
 void get_features(std::size_t k,
@@ -112,11 +110,18 @@ inline uint64_t feature_hash(const std::string& key)
 class FastNPChunker : public TaggerBase<tag_t, iob_t>
 {
     public:
-        FastNPChunker(np_weights_t weights, np_labelmap_in_t labelmap_in);
+        FastNPChunker(
+            np_weights_t weights,
+            np_labelmap_in_t labelmap_in,
+            rules_t rules);
         ~FastNPChunker();
 
         /// Given a POS tagged sentence, return IOB labels for each token
         iob_label_t tag_sentence(std::vector<tag_t> const & sentence);
+
+        /// Given a POS tagged document (list of sentences), return IOB labels
+        void tag_sentences(std::vector<std::vector<tag_t> >& document,
+            std::vector<std::vector<iob_t> >& tags);
 
         /// Given POS tagged sentences, return NP only
         void chunk_sentences(
@@ -136,9 +141,17 @@ class FastNPChunker : public TaggerBase<tag_t, iob_t>
         // the output class labels
         std::vector<char> classes;
 
+        // The optional rules to apply
+        // they are given default values in the initializer list
+        // then reset if passed in the rules map
+        bool combine_np;
+
         /// Given some features, compute the scores for each class
         void compute_scores(np_features_t const & features,
             std::vector<float>& scores);
+
+        /// Apply the rules to the IOB labels
+        void apply_rules(std::vector<std::vector<iob_t> >& tags);
 
         // disable some default constructors
         FastNPChunker();
@@ -147,8 +160,9 @@ class FastNPChunker : public TaggerBase<tag_t, iob_t>
 };
 
 FastNPChunker::FastNPChunker(
-    np_weights_t weights, np_labelmap_in_t labelmap_in) :
-    weights(weights), labelmap(1000, murmurhash3), classes()
+    np_weights_t weights, np_labelmap_in_t labelmap_in, rules_t rules) :
+        weights(weights), labelmap(1000, murmurhash3),
+        classes(), combine_np(false)
 {
     // fill in the labelmap
     for (np_labelmap_in_t::const_iterator it = labelmap_in.begin();
@@ -162,6 +176,14 @@ FastNPChunker::FastNPChunker(
     classes.push_back('I');
     classes.push_back('O');
     classes.push_back('B');
+
+    // set the rules
+    for (rules_t::const_iterator it = rules.begin(); it != rules.end(); ++it)
+    {
+        if (it->first == "combine_np")
+            combine_np = it->second;
+        // else is a stub if we add more in the future
+    }
 }
 
 FastNPChunker::~FastNPChunker() {}
@@ -259,6 +281,25 @@ iob_label_t FastNPChunker::tag_sentence(std::vector<tag_t> const & sentence)
     return ret;
 }
 
+void FastNPChunker::tag_sentences(
+    std::vector<std::vector<tag_t> >& document,
+    std::vector<std::vector<iob_t> >& tags)
+{
+    // call the super class
+    TaggerBase<tag_t, iob_t>::tag_sentences(document, tags);
+    // now apply the rules
+    apply_rules(tags);
+}
+
+void FastNPChunker::apply_rules(std::vector<std::vector<iob_t> >& tags)
+{
+    // apply the various rules
+    if (combine_np)
+    {
+        CombineState state;
+        state.glob_np(tags);
+    }
+}
 
 void FastNPChunker::chunk_sentences(
             std::vector<std::vector<tag_t> > & sentences,

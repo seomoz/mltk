@@ -5,6 +5,7 @@ from libcpp.vector cimport vector
 from libcpp.pair cimport pair
 from libcpp.string cimport string
 from libcpp.map cimport map
+from libcpp cimport bool
 
 # wrappers for the C++ classes we'll use
 cdef extern from "_np_chunker.cc":
@@ -16,12 +17,14 @@ cdef extern from "_np_chunker.cc":
         string tag
         char label
     ctypedef vector[iob_t] iob_label_t
-    ctypedef vector[tag_t] np_t;
+    ctypedef vector[tag_t] np_t
+    ctypedef map[string, bool] rules_t
 
     cdef cppclass FastNPChunker:
         FastNPChunker(
             np_weights_t weights,
-            np_labelmap_in_t labelmap_in)
+            np_labelmap_in_t labelmap_in,
+            rules_t rules)
         void tag_sentences(
             vector[vector[tag_t] ]& document, vector[iob_label_t]& iob)
         void chunk_sentences(
